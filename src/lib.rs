@@ -1,6 +1,6 @@
 use rand::Rng;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Node {
     Wall,
     Floor,
@@ -80,5 +80,51 @@ impl Grid {
             let start_y = rng.gen_range(1..self.height - 1);
             self.random_walk(start_x, start_y, steps_per_walk);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_grid_initialization() {
+        let grid = Grid::new(10, 10);
+        assert_eq!(grid.width, 10);
+        assert_eq!(grid.height, 10);
+        assert_eq!(grid.nodes.len(), 100);
+        for node in grid.nodes {
+            assert_eq!(node, Node::Wall);
+        }
+    }
+
+    #[test]
+    fn test_set_and_get_node() {
+        let mut grid = Grid::new(10, 10);
+        grid.set_node(1, 1, Node::Floor);
+        assert_eq!(grid.get_node(1, 1), Some(Node::Floor));
+        assert_eq!(grid.get_node(0, 0), Some(Node::Wall));
+        assert_eq!(grid.get_node(10, 10), None);
+    }
+
+    #[test]
+    fn test_random_walk() {
+        let mut grid = Grid::new(10, 10);
+        grid.random_walk(5, 5, 20);
+
+        let floor_count = grid.nodes.iter().filter(|&&n| n == Node::Floor).count();
+        assert!(floor_count > 0, "There should be at least one floor node");
+    }
+
+    #[test]
+    fn test_generate_dungeon() {
+        let mut grid = Grid::new(20, 20);
+        grid.generate_dungeon(10, 50);
+
+        let floor_count = grid.nodes.iter().filter(|&&n| n == Node::Floor).count();
+        assert!(
+            floor_count > 50,
+            "There should be a significant number of floor nodes"
+        );
     }
 }
